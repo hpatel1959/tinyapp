@@ -3,6 +3,17 @@ const PORT = 8080;
 const app = express();
 
 app.set('view engine', 'ejs');
+app.use(express.urlencoded({ extended: true }));
+
+function generateRandomString() {
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    result += charset[randomIndex];
+  }
+  return result;
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -16,6 +27,15 @@ app.get('/', (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
+});
+
+app.post('/urls', (req, res) => {
+  console.log(req.body);
+  res.send('Ok');
+});
+
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new')
 });
 
 app.get('/urls/:id', (req, res) => {
