@@ -75,10 +75,11 @@ app.post('/urls/:id/update', (req, res) => {
 
 app.post('/login', (req, res) => {
   res.cookie('username', req.body.username);
-  // const templateVars = {
-  //   username: req.cookies['username'],
-  // };
-  // res.render('partials/_header', templateVars);
+  res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
   res.redirect('/urls');
 });
 
