@@ -13,7 +13,7 @@
 
   <body>
     <%- include('partials/_header') %>
-    
+
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
@@ -22,8 +22,26 @@
           Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
         </p>
       </div>
+    </div>
+
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">Edit</h5>
+        <p class="card-text">
+          <td>
+            <form method="POST" action="/urls/<%= id %>/update">
+              <p>New URL:</p>
+              <input name="updatedURL" placeholder="..."></input>
+              <button href="/urls/<%= id %>/update">Edit</button>
+             </form>
+          </td>          
+        </p>
+      </div>
       <div class="card-footer text-muted"></div>
     </div>
+
+
+    
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
