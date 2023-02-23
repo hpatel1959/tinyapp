@@ -140,6 +140,13 @@ app.post('/register', (req, res) => {
   res.redirect("urls");
 });
 
+app.get('/login', (req, res) => {
+  const userID = req.cookies['user_id'];
+  const user = users[userID]
+  const templateVars = {user: user}
+  res.render('urls_login', templateVars);
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

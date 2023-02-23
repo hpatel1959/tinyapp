@@ -23,9 +23,11 @@
         </form>
         <% } %>
         <%if (!user) { %>
-          <form method="post" action="/login">
-            <input class="rounded  border border-dark" name="email" placeholder="Email">
+          <form method="get" action="/login">
             <button class="btn btn-outline-dark" type="submit">Login</button>
+          </form>
+          <form method="get" action="/register">
+            <button class="btn btn-outline-dark" type="submit">Register</button>
           </form>
           <% } %>
       </div>
