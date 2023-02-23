@@ -7,6 +7,21 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+const checkIfEmailExists = function(email) {
+  for (let userKey in users) {
+    if (users[userKey].email === email) {
+      return users[userKey];
+    }
+  }
+  return null;
+}
+
+const checkIfCredentialsAreEmpty = function(email, password) {
+  if (email === '' || password === '') {
+    return 'error';
+  }
+}
+
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -110,6 +125,16 @@ app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const randomID = generateRandomString();
+  const result = checkIfEmailExists(email);
+  const result1 = checkIfCredentialsAreEmpty(email, password);
+  if (result) {
+    res.status(400);
+    return res.send('Email is already in use');
+  }
+  if (result1) {
+    res.status(400);
+    return res.send('Please make sure both fields are filled in.');
+  }
   users[randomID] = {id: randomID, email: email, password: password};
   res.cookie('user_id', randomID);
   res.redirect("urls");
