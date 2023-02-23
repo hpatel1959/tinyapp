@@ -151,7 +151,6 @@ app.post('/register', (req, res) => {
     return res.send('Please make sure both fields are filled in.');
   }
   users[randomID] = {id: randomID, email: email, password: password};
-  console.log(users);
   res.cookie('user_id', randomID);
   res.redirect("urls");
 });
