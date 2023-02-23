@@ -58,10 +58,18 @@ app.get("/urls", (req, res) => {
   const userID = req.cookies['user_id'];
   const user = users[userID]
   const templateVars = { urls: urlDatabase, user: user };
-  res.render("urls_index", templateVars);
+  if (userID) {
+    return res.render("urls_index", templateVars);
+  }
+  res.redirect('/login');
+  
 });
 
 app.post('/urls', (req, res) => {
+  const userID = req.cookies['user_id'];
+  if (!userID) {
+    return res.send("Please login or register for an account to create your own short URLS\n");
+  }
   const randomString = generateRandomString();
   urlDatabase[randomString] = req.body.longURL;
   res.redirect('/urls/' + randomString);
@@ -69,14 +77,20 @@ app.post('/urls', (req, res) => {
 
 app.get('/u/:id', (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  if (longURL) {
+    return res.redirect(longURL);
+  }
+  res.send('Sorry the short URL you have entered does not match any in our records');
 });
 
 app.get('/urls/new', (req, res) => {
   const userID = req.cookies['user_id'];
   const user = users[userID]
   templateVars = {user: user};
-  res.render('urls_new', templateVars)
+  if (userID) {
+    return res.render('urls_new', templateVars)
+  }
+  res.redirect('/login');
 });
 
 app.get('/urls/:id', (req, res) => {
@@ -133,6 +147,9 @@ app.get('/register', (req, res) => {
   const userID = req.cookies['user_id'];
   const user = users[userID]
   const templateVars = {user: user}
+  if (userID) {
+    return res.redirect("urls")
+  }
   res.render('urls_registration', templateVars);
 });
 
@@ -159,7 +176,10 @@ app.get('/login', (req, res) => {
   const userID = req.cookies['user_id'];
   const user = users[userID]
   const templateVars = {user: user}
-  res.render('urls_login', templateVars);
+  if (userID) {
+    return res.redirect("/urls")
+  }
+  return res.render('urls_login', templateVars);
 });
 
 app.listen(PORT, () => {
