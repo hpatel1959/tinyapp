@@ -105,13 +105,28 @@ app.post('/urls/:id/update', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res.cookie('user_id', req.body['email']);
-  res.redirect('/urls');
+  const email = req.body.email;
+  const password = req.body.password;
+  const result = checkIfEmailExists(email);
+  if (result === null) {
+    res.status(403);
+    return res.send('Email not found, please try again, or register for an account')
+  }
+  if (email === result.email && password !== result.password) {
+    res.status(403);
+    return res.send('Incorrect password.');
+  }
+  if (email === result.email && password === result.password) {
+  res.cookie('user_id', result.id);
+  return res.redirect('/urls');
+  }
+  res.status(400);
+  return res.send('Invalid credentials.')
 });
 
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 app.get('/register', (req, res) => {
@@ -136,6 +151,7 @@ app.post('/register', (req, res) => {
     return res.send('Please make sure both fields are filled in.');
   }
   users[randomID] = {id: randomID, email: email, password: password};
+  console.log(users);
   res.cookie('user_id', randomID);
   res.redirect("urls");
 });
