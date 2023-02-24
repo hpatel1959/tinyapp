@@ -1,12 +1,16 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const PORT = 8080;
 const app = express();
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['hi', 'hello', 'bye', 'goodbye', 'later'],
+  maxAge: 24 * 60 * 60 * 1000
+}))
 
 const checkIfEmailExists = function(email) {
   for (let userKey in users) {
@@ -66,7 +70,7 @@ app.get('/', (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const user = users[userID]
   const filteredUrlDatabase = filterURLByUserID(urlDatabase, userID);
   const templateVars = { urls: filteredUrlDatabase, user: user };
@@ -78,7 +82,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   if (!userID) {
     return res.send("Please login or register for an account to create your own short URLS\n");
   }
@@ -96,7 +100,7 @@ app.get('/u/:id', (req, res) => {
 });
 
 app.get('/urls/new', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const user = users[userID]
   templateVars = {user: user};
   if (userID) {
@@ -106,7 +110,7 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:id', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   if (!userID) {
     res.send('Sorry you have to be logged in to view this page');
   }
@@ -132,7 +136,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.post('/urls/:id/delete', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   if (!urlDatabase[req.params.id]) {
     return res.send('Sorry this short URL does not exist.\n')
   }
@@ -146,7 +150,7 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 app.post('/urls/:id', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   if (!urlDatabase[req.params.id]) {
     return res.send('Sorry this short URL does not exist.\n')
   }
@@ -172,7 +176,7 @@ app.post('/login', (req, res) => {
     return res.send('Incorrect password.');
   }
   if (email === result.email && bcrypt.compareSync(password, result.password)) {
-  res.cookie('user_id', result.id);
+  req.session.user_id = result.id;
   return res.redirect('/urls');
   }
   res.status(400);
@@ -180,12 +184,12 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect('/login');
 });
 
 app.get('/register', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const user = users[userID]
   const templateVars = {user: user}
   if (userID) {
@@ -209,12 +213,12 @@ app.post('/register', (req, res) => {
     return res.send('Please make sure both fields are filled in.');
   }
   users[randomID] = {id: randomID, email: email, password: bcrypt.hashSync(password, 10)};
-  res.cookie('user_id', randomID);
+  req.session.user_id = randomID;
   res.redirect("urls");
 });
 
 app.get('/login', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const user = users[userID]
   const templateVars = {user: user}
   if (userID) {
