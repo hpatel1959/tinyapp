@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 const PORT = 8080;
 const app = express();
@@ -36,12 +37,12 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: "$2a$10$vfcy0r8CzERsyxjU.VkZHue0L.uEmb9quWnCMtPqwLfxZshuyVtbK",
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: "$2a$10$EXX5oB9HBN8IIi/NUAKkA.A0fnya4a.QAhF48KrkfVqJZo0dGcLgK",
   },
 };
 
@@ -166,11 +167,11 @@ app.post('/login', (req, res) => {
     res.status(403);
     return res.send('Email not found, please try again, or register for an account')
   }
-  if (email === result.email && password !== result.password) {
+  if (email === result.email && !bcrypt.compareSync(password, result.password)) {
     res.status(403);
     return res.send('Incorrect password.');
   }
-  if (email === result.email && password === result.password) {
+  if (email === result.email && bcrypt.compareSync(password, result.password)) {
   res.cookie('user_id', result.id);
   return res.redirect('/urls');
   }
@@ -207,7 +208,7 @@ app.post('/register', (req, res) => {
     res.status(400);
     return res.send('Please make sure both fields are filled in.');
   }
-  users[randomID] = {id: randomID, email: email, password: password};
+  users[randomID] = {id: randomID, email: email, password: bcrypt.hashSync(password, 10)};
   res.cookie('user_id', randomID);
   res.redirect("urls");
 });
