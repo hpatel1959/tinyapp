@@ -1,7 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const checkIfEmailExists = require('./helpers').checkIfEmailExists;
+const checkIfCredentialsAreEmpty = require('./helpers').checkIfCredentialsAreEmpty;
+const filterURLByUserID = require('./helpers').filterURLByUserID;
 const PORT = 8080;
+
+
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -11,31 +16,6 @@ app.use(cookieSession({
   keys: ['hi', 'hello', 'bye', 'goodbye', 'later'],
   maxAge: 24 * 60 * 60 * 1000
 }))
-
-const checkIfEmailExists = function(email) {
-  for (let userKey in users) {
-    if (users[userKey].email === email) {
-      return users[userKey];
-    }
-  }
-  return null;
-}
-
-const checkIfCredentialsAreEmpty = function(email, password) {
-  if (email === '' || password === '') {
-    return 'error';
-  }
-}
-
-const filterURLByUserID = function(urlDatabase, userID) {
-  let filteredObj = {};
-  for (let shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === userID) {
-      filteredObj[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return filteredObj;
-}
 
 const users = {
   userRandomID: {
@@ -166,7 +146,7 @@ app.post('/urls/:id', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const result = checkIfEmailExists(email);
+  const result = checkIfEmailExists(email, users);
   if (result === null) {
     res.status(403);
     return res.send('Email not found, please try again, or register for an account')
@@ -202,7 +182,7 @@ app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const randomID = generateRandomString();
-  const result = checkIfEmailExists(email);
+  const result = checkIfEmailExists(email, users);
   const result1 = checkIfCredentialsAreEmpty(email, password);
   if (result) {
     res.status(400);
