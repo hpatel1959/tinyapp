@@ -5,6 +5,8 @@ const checkIfEmailExists = require('./helpers').checkIfEmailExists;
 const checkIfCredentialsAreEmpty = require('./helpers').checkIfCredentialsAreEmpty;
 const generateRandomString = require('./helpers').generateRandomString;
 const filterURLByUserID = require('./helpers').filterURLByUserID;
+const users = require('./database').users;
+const urlDatabase = require('./database').urlDatabase;
 const PORT = 8080;
 
 
@@ -18,27 +20,13 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000
 }))
 
-// database that stores all users
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "$2a$10$vfcy0r8CzERsyxjU.VkZHue0L.uEmb9quWnCMtPqwLfxZshuyVtbK",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "$2a$10$EXX5oB9HBN8IIi/NUAKkA.A0fnya4a.QAhF48KrkfVqJZo0dGcLgK",
-  },
-};
-
-const urlDatabase = {
-  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID:"user2RandomID"},
-  "9sm5xK": {longURL: "http://www.google.com", userID: "userRandomID"}
-};
 
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  const userID = req.session.user_id;
+  if (userID) {
+    return res.redirect('/urls');
+  }
+  res.redirect('/login');
 });
 
 app.get("/urls", (req, res) => {
@@ -49,7 +37,7 @@ app.get("/urls", (req, res) => {
   if (userID) {
     return res.render("urls_index", templateVars);
   }
-  res.redirect('/login');
+  res.send('Please login to view your short URLS.');
   
 });
 
@@ -64,11 +52,12 @@ app.post('/urls', (req, res) => {
 });
 
 app.get('/u/:id', (req, res) => {
-  const longURL = urlDatabase[req.params.id].longURL; // gets longURL from urlDatabase using id from path
-  if (longURL) {
-    return res.redirect(longURL);
+  const shortURLObj = urlDatabase[req.params.id];
+  if (!shortURLObj) {
+    return res.send('Sorry the short URL you have entered does not match any in our records');
   }
-  res.send('Sorry the short URL you have entered does not match any in our records');
+  const longURL = urlDatabase[req.params.id].longURL; // gets longURL from urlDatabase using id from path
+  res.redirect(longURL);
 });
 
 app.get('/urls/new', (req, res) => {
