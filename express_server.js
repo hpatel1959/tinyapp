@@ -73,7 +73,7 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const userID = req.session.user_id;
   if (!userID) { // if user is not logged in
-    res.send('Sorry you have to be logged in to view this page');
+    return res.send('Sorry you have to be logged in to view this page');
   }
   if (!urlDatabase[req.params.id]) { // if short url from path does not match an short url object from urlDatabase
     return res.send('Sorry this short URL does not exist.')
@@ -141,7 +141,7 @@ app.post('/login', (req, res) => {
   return res.redirect('/urls');
   }
   res.status(400);
-  return res.send('Invalid credentials.') // if email and password both do not match email and password in users object
+  res.send('Invalid credentials.') // if email and password both do not match email and password in users object
 });
 
 app.post('/logout', (req, res) => {
@@ -185,7 +185,7 @@ app.get('/login', (req, res) => {
   if (userID) { // if user is logged in
     return res.redirect("/urls")
   }
-  return res.render('urls_login', templateVars);
+  res.render('urls_login', templateVars);
 });
 
 app.listen(PORT, () => {
